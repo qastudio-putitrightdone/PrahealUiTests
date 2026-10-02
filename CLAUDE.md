@@ -29,10 +29,12 @@ npm run allure:generate   # rebuild allure-report/ from allure-results/ (old rep
 npm run allure:open       # open the report
 npm run test:allure       # run + generate + open
 npm run test:smoke        # run only tests tagged @smoke
-npx playwright test --grep "@APT-03|@PAY-01"   # run tests by scenario ID
+npx playwright test --grep "@HAT-T2|@HAT-T3"   # run tests by Zephyr test case id (tmsLink adds the tag)
+npm run typecheck          # TypeScript type-check
+npm run lint               # framework rule check (ESLint + custom rules in lint/framework-rules.mjs)
 npm run -s zephyr -- list            # list Zephyr Scale test cases (project HAT)
 npm run -s zephyr -- get HAT-T12     # show a Zephyr test case with steps
-npx -y -p typescript tsc -p tsconfig.json   # type-check (typescript is not a dependency)
+npm run typecheck                         # type-check
 ```
 
 Always type-check after changes. Do not run tests against the QA application unless asked.
@@ -49,6 +51,15 @@ Use the `/automate-test` skill (`.claude/skills/automate-test/SKILL.md`) to turn
 - **Zephyr folders mirror the `tests/` directory structure**: `tests/login/...` -> folder `login`, `tests/dashboard/...` -> `dashboard`, `tests/api/auth/...` -> `api/auth` (nested folders are created by the client).
 - When asked to automate a single test, do not suggest missing scenarios; list missing tests for a functionality only when explicitly asked (`/praheal-test-advisor gaps`).
 - **Secrets live only in the gitignored `.env`** (`ZEPHYR_API_TOKEN`, ...); `.env.example` lists the variables without values. Never put tokens or passwords for external systems in `.mcp.json`, code, docs or output. If an MCP server needs a secret, reference it as `${VAR}` in `.mcp.json` and keep the value in the environment.
+
+## CI (GitHub Actions) and PR checks
+
+- `.github/workflows/pr-checks.yml` runs on every pull request to `main`: `npm run typecheck` and the framework rule check `npm run lint:ci` (ESLint with the custom rules in `lint/framework-rules.mjs`; violations appear as annotations on the PR). Make it a required status check in branch protection.
+- The framework rules enforced statically: specs import from `fixtures`; every test has `Allure({ description, requirement, tmsLink })`; exactly one `check...` call per test, last; specs use actions only (no `expect`, locators, `page`); no UI login outside `tests/login/`; no `waitForTimeout`; page classes hold only `protected readonly` decorator fields (no methods, no raw locators, no `expect`); every actions method has `@Step` and no `expect` / locators; decorator assertions are named `check...` and use `expect` without actions; no code comments; no hard-coded mobile numbers outside `user/Users.ts` or `ApplicationMessages` values; API services use `<Module>Endpoint` enums; no floating (un-awaited) promises / decorator chains.
+- When a framework rule changes in this file, update `lint/framework-rules.mjs` (and `eslint.config.mjs`) in the same change.
+- `.github/workflows/e2e-tests.yml` (manual: Actions -> E2E tests -> Run workflow) runs tests **headless** (`CI=true`) with inputs `scope` = `all` | `tags` (`tags` input in grep syntax, e.g. `@smoke` or `@smoke|@HAT-T2`) | `specs` (`specs` input: space-separated spec names / paths, e.g. `LoginTests AdminDashboardTests`). It then publishes the Allure Dashboard (`pranesh517/allure_dashboards@v2`) and its Traceability Matrix (requirement = Allure label `requirement`, test case = TMS link name; requirement list generated from the scenario catalog by `npm run requirements:csv`) to GitHub Pages, and uploads `allure-results` as an artifact.
+- GitHub Pages must be enabled with source "GitHub Actions" (Settings -> Pages); Pages on a private repository requires a paid GitHub plan.
+- On CI, Chrome runs headless at 1920x1080 and the fullscreen CDP step is skipped; locally the browser stays headed and fullscreen.
 
 ## Application context and test planning
 
@@ -151,8 +162,10 @@ The Praheal application context (built from `Praheal_User_Manual_24_09.pdf` at t
 - Allure metadata uses `Allure({...})` from `reporting/allure.ts` (`epic`, `feature`, `story`, `severity`, `description`):
   - `epic` / `story` shared by a group go on `test.describe`.
   - `description` goes on **each test**.
-  - `tags` on each test: its scenario ID from the catalog plus `smoke` if the scenario is flagged `S` (`tags: ['smoke', 'DSH-01']`). Tags become Playwright `@tags` (filter with `--grep`) and Allure tag labels.
-  - `tmsLink` on each test automated from Zephyr: the Zephyr test case ID (`tmsLink: 'HAT-T12'`, or an array for several). Do not also put the key in `tags`.
+  - `tags` only for run groups such as `smoke` (`tags: ['smoke']`) - never requirement ids. Tags become Playwright `@tags` (filter with `--grep`) and Allure tag labels.
+  - `requirement` on each test: the requirement / scenario id from the catalog (`requirement: 'AUTH-03'`, or an array). It is written as the Allure label `requirement`, which the Allure Dashboard traceability matrix reads.
+  - `tmsLink` on every test: the Zephyr test case id (`tmsLink: 'HAT-T12'`, or an array). Written as an Allure TMS link named with the id (the dashboard's test case id) and as a `@HAT-T12` Playwright tag. Do not also put the key in `tags`.
+  - Full example: `Allure({ description: '...', tags: ['smoke'], requirement: 'AUTH-03', tmsLink: 'HAT-T2' })`. `description`, `requirement` and `tmsLink` are mandatory (enforced by the PR check).
   ```ts
   test.describe('Login screen verifications', Allure({ epic: 'Authentication', story: 'Login screen' }), () => {
     test.beforeEach(async ({ loginActions }) => {

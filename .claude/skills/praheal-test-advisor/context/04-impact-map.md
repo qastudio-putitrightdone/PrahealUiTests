@@ -20,7 +20,7 @@ Goal: in a few minutes, prove every major business area is up and its main path 
 | 12 | Patient portal | AUTH-09, PTL-01 | Patient-facing channel |
 
 Execution guidance:
-- Tag smoke tests `@smoke` (via `Allure({ tags: ['smoke', '<ID>'] })`) and run `npm run test:smoke`.
+- Tag smoke tests `@smoke` (via `Allure({ tags: ['smoke'], requirement: '<ID>', tmsLink: '<HAT-Tn>' })`) and run `npm run test:smoke` (or the E2E workflow with scope `tags` and `@smoke`).
 - Smoke tests that are not about login start with `browserSession.loginAs(<USER>)`; only AUTH-* smoke tests use the login screen.
 - Run smoke after every deployment and before any regression run; a smoke failure blocks further testing.
 

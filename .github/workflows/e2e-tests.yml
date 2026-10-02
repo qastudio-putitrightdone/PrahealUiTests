@@ -1,0 +1,157 @@
+name: E2E tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: What to run
+        type: choice
+        options: [all, tags, specs]
+        default: all
+      tags:
+        description: 'scope=tags: Playwright tags (grep syntax), e.g. @smoke or @smoke|@HAT-T2'
+        required: false
+        default: ''
+      specs:
+        description: 'scope=specs: spec files / classes, space-separated, e.g. LoginTests AdminDashboardTests or tests/login/LoginTests.spec.ts'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: e2e-tests-pages
+  cancel-in-progress: false
+
+env:
+  CI: 'true'
+
+jobs:
+  e2e:
+    name: E2E tests (${{ inputs.scope }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Google Chrome
+        run: npx playwright install --with-deps chrome
+
+      - name: Run tests (headless)
+        id: tests
+        continue-on-error: true
+        env:
+          SCOPE: ${{ inputs.scope }}
+          TAGS: ${{ inputs.tags }}
+          SPECS: ${{ inputs.specs }}
+        run: |
+          args=()
+          case "$SCOPE" in
+            all) ;;
+            tags)
+              if [ -z "$TAGS" ]; then echo "::error::scope=tags needs the 'tags' input"; exit 1; fi
+              args+=(--grep "$TAGS")
+              ;;
+            specs)
+              if [ -z "$SPECS" ]; then echo "::error::scope=specs needs the 'specs' input"; exit 1; fi
+              read -ra files <<< "$SPECS"
+              args+=("${files[@]}")
+              ;;
+          esac
+          echo "Running: npx playwright test ${args[*]}"
+          npx playwright test "${args[@]}"
+
+      - name: Requirements list for traceability
+        run: npm run -s requirements:csv -- requirements.csv
+
+      - name: Compute Pages URL
+        id: pages-url
+        run: echo "url=https://${{ github.repository_owner }}.github.io/${GITHUB_REPOSITORY#*/}/" >> "$GITHUB_OUTPUT"
+
+      - name: Restore dashboard history
+        uses: actions/cache@v4
+        with:
+          path: dashboard-history
+          key: allure-dashboard-history-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            allure-dashboard-history-${{ github.ref_name }}-
+
+      - name: Generate Allure dashboard
+        id: dashboard
+        uses: pranesh517/allure_dashboards@v2
+        with:
+          allure-results-path: allure-results
+          output-path: site
+          history-path: dashboard-history
+          dashboard-title: Praheal UI Tests
+          run-label: '#${{ github.run_number }} ${{ inputs.scope }} ${{ inputs.tags }}${{ inputs.specs }}'
+          dashboard-url: ${{ steps.pages-url.outputs.url }}
+          traceability-url: ${{ steps.pages-url.outputs.url }}traceability/
+
+      - name: Save dashboard history
+        run: |
+          rm -rf dashboard-history
+          cp -r site/data dashboard-history
+
+      - name: Generate traceability matrix
+        id: matrix
+        uses: pranesh517/allure_dashboards/traceability@v2
+        with:
+          allure-results-path: allure-results
+          output-path: site/traceability
+          requirement-annotation: requirement
+          requirement-source: label
+          requirement-id-pattern: '^[A-Z]+-\d+$'
+          testcase-annotation: tms
+          testcase-source: link
+          testcase-id-pattern: '^HAT-T\d+$'
+          requirements-file: requirements.csv
+          dashboard-url: ${{ steps.pages-url.outputs.url }}
+          title: Praheal Traceability Matrix
+
+      - name: Upload Allure results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results/
+          retention-days: 30
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          {
+            echo "### Praheal E2E (${{ inputs.scope }})"
+            echo "- Pass rate: ${{ steps.dashboard.outputs.pass-rate }}% (passed ${{ steps.dashboard.outputs.passed }}, failed ${{ steps.dashboard.outputs.failed }}, broken ${{ steps.dashboard.outputs.broken }})"
+            echo "- Dashboard: ${{ steps.deployment.outputs.page_url }}"
+            echo "- Traceability matrix: ${{ steps.deployment.outputs.page_url }}traceability/"
+            echo "- Requirement coverage: ${{ steps.matrix.outputs.coverage-percent }}% (${{ steps.matrix.outputs.covered-requirements }}/${{ steps.matrix.outputs.total-requirements }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail job when tests failed
+        if: ${{ steps.tests.outcome == 'failure' }}
+        run: |
+          echo "::error::Playwright tests failed - see the Allure dashboard and the allure-results artifact"
+          exit 1

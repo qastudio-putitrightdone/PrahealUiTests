@@ -25,7 +25,7 @@ The application context lives next to this file in `context/` (`.claude/skills/p
 The source document is `Praheal_User_Manual_24_09.pdf` at the project root. Go back to it when the context is not detailed enough, and update the context files with what you learn.
 
 Also read the automation state when relevant:
-- Specs: `tests/**/*.spec.ts`. A test covers a scenario when it carries the scenario ID tag (`Allure({ tags: ['AUTH-02'] })`); untagged tests are matched by title / description and reported as "probably covers".
+- Specs: `tests/**/*.spec.ts`. A test covers a scenario when it declares it as requirement (`Allure({ requirement: 'AUTH-02', ... })` - find them with `grep -rn "requirement: 'AUTH-02'" tests`); tests without it are matched by title / description and reported as "probably covers".
 - Actions (`actionsComponents/`), pages (`pages/`) and the API layer (`api/`) show which screens and endpoints are already automatable.
 
 ## Mode 1 - Missing scenarios and test cases (`gaps`)
@@ -67,7 +67,7 @@ Run this mode **only when the user explicitly asks for missing tests** (e.g. "wh
 4. Output:
    - Root area: module(s) and rule IDs.
    - Sanity checklist: scenario IDs + one-line checks, including the exact reproduction of the defect.
-   - Regression areas: grouped by module with scenario IDs and why each is at risk; mark which are already automated (tags) so they can be run with `npx playwright test --grep "@ID1|@ID2"`.
+   - Regression areas: grouped by module with scenario IDs and why each is at risk; mark which are already automated (`requirement:` in specs) and give their Zephyr keys so they can be run with `npx playwright test --grep "@HAT-T1|@HAT-T2"` (or the E2E workflow, scope `tags`).
    - Roles / branches / data variations to include.
    - Missing scenarios revealed by the defect (feed back into Mode 1).
 

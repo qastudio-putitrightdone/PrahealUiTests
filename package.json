@@ -9,7 +9,11 @@
     "allure:open": "allure open allure-report",
     "test:allure": "npm test; npm run allure:generate && npm run allure:open",
     "test:smoke": "playwright test --grep @smoke",
-    "zephyr": "node --env-file=.env scripts/zephyr.mjs"
+    "zephyr": "node --env-file=.env scripts/zephyr.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:ci": "eslint . --format ./lint/github-formatter.mjs",
+    "requirements:csv": "node scripts/requirements-csv.mjs"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +23,9 @@
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.3",
     "allure": "^3.19.1",
-    "allure-playwright": "^3.13.0"
+    "allure-playwright": "^3.13.0",
+    "eslint": "^10.11.0",
+    "typescript": "~6.0",
+    "typescript-eslint": "^8.71.0"
   }
 }

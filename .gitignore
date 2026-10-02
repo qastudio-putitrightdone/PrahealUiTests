@@ -22,3 +22,6 @@ node_modules/
 
 # Client documentation (kept locally only)
 Praheal_User_Manual_24_09.pdf
+requirements.csv
+/site/
+/dashboard-history/

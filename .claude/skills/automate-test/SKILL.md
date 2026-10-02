@@ -121,8 +121,8 @@ Work out which feature/page the test belongs to and reuse existing files wheneve
    - Add to the existing spec for that feature; create one only if none exists.
    - Import `test` from `fixtures` and `Allure` from `reporting/allure`.
    - `epic` / `story` go on the `test.describe` (reuse the existing block when they match); if the story differs, put `story` on the test itself.
-   - **Tag every test with its scenario ID** from the catalog, and add `smoke` when the scenario is flagged `S`: `Allure({ description: '...', tags: ['smoke', 'AUTH-02'] })`. If the scenario is new, add it to `03-test-scenarios.md` with the next free ID.
-   - When the test case comes from Zephyr Scale (via `/automate-zephyr-test`), add the Zephyr test case ID as Allure TMS link with `tmsLink` (the equivalent of Java's `@TmsLink`): `Allure({ description: '...', tags: ['smoke', 'APT-03'], tmsLink: 'HAT-T12' })`. Do not repeat the Zephyr key in `tags` - `tmsLink` adds the `@HAT-T12` tag automatically.
+   - **Allure metadata on every test** (all three mandatory - the PR check rejects tests without them): `requirement` = the scenario / requirement ID from the catalog (`requirement: 'AUTH-02'`; if the scenario is new, add it to `03-test-scenarios.md` with the next free ID), `tmsLink` = the Zephyr test case ID (step 6), `description`. Add `tags: ['smoke']` when the scenario is flagged `S`; never put requirement IDs or Zephyr keys in `tags`.
+   - `tmsLink` is the equivalent of Java's `@TmsLink`: `Allure({ description: '...', tags: ['smoke'], requirement: 'APT-03', tmsLink: 'HAT-T12' })`. It renders the Zephyr link in Allure (named with the test case ID, which the Allure Dashboard traceability matrix uses) and adds the `@HAT-T12` tag automatically.
    - **Every test has `Allure({ description: '...' })`** - a full sentence describing the one thing verified and the expected outcome, e.g. `'Verifies that logging in with a wrong password shows the error message "Invalid Mobile No. Or Password."'`.
    - Test title is short and behaviour-focused (`'shows error for invalid password'`), not a step list.
    - The test body only calls actions-class methods - no locators, no element access, no direct `expect`.
@@ -132,7 +132,7 @@ Work out which feature/page the test belongs to and reuse existing files wheneve
 
 ## 5. Verify
 
-1. Type-check: `npx -y -p typescript tsc -p tsconfig.json` - fix all errors.
+1. Type-check and framework rule check: `npm run typecheck` and `npm run lint` - fix all errors (the same checks run on every pull request).
    Then confirm the spec follows the Login policy: no `loginToApplication` or `/staff-login` in a test that is not about login.
    Also confirm there are no hardcoded application messages, labels, storage keys or API values outside locators in the code you added - each must come from a constants file. Locators must stay literal selectors.
 2. Close the MCP browser (`browser_close`), then run only the new test: `npx playwright test tests/<feature>/<File>.spec.ts -g "<test title>"`.
