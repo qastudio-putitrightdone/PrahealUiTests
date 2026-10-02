@@ -19,3 +19,6 @@ node_modules/
 
 # OS
 .DS_Store
+
+# Client documentation (kept locally only)
+Praheal_User_Manual_24_09.pdf
