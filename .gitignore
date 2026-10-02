@@ -1,0 +1,21 @@
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Allure
+/allure-results/
+/allure-report/
+
+# Playwright MCP
+/.playwright-mcp/
+
+# Local secrets
+.env
+
+# OS
+.DS_Store

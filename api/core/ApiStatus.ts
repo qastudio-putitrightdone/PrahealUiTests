@@ -1,0 +1,6 @@
+export const ApiStatus = {
+  SUCCESS: 1,
+  INVALID_CREDENTIALS: 101,
+  UNAUTHORIZED: 401,
+  LOGGED_IN_ELSEWHERE: 10010,
+} as const;
