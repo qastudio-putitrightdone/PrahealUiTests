@@ -9,16 +9,20 @@ export interface AllureMetadata {
   description?: string;
   tags?: string[];
   tmsLink?: string | string[];
+  requirement?: string | string[];
 }
 
-export function Allure({ tags = [], tmsLink = [], ...labels }: AllureMetadata): TestDetails {
-  const tmsLinks = typeof tmsLink === 'string' ? [tmsLink] : tmsLink;
+const asList = (value: string | string[] = []): string[] => (typeof value === 'string' ? [value] : value);
+
+export function Allure({ tags = [], tmsLink, requirement, ...labels }: AllureMetadata): TestDetails {
+  const tmsLinks = asList(tmsLink);
   const annotation: TestDetailsAnnotation[] = [
     ...Object.entries(labels).map(([key, value]) => ({
       type: key === 'description' ? 'description' : `allure.label.${key}`,
       description: value,
     })),
     ...tmsLinks.map((key) => ({ type: 'tms', description: key })),
+    ...asList(requirement).map((id) => ({ type: 'allure.label.requirement', description: id })),
   ];
   return { annotation, tag: [...tags, ...tmsLinks].map((tag) => `@${tag}`) };
 }

@@ -13,7 +13,7 @@ type Actions = {
 
 export const test = base.extend<Actions>({
   page: async ({ page, browserName }, use) => {
-    if (browserName === 'chromium') {
+    if (browserName === 'chromium' && !process.env.CI) {
       const cdp = await page.context().newCDPSession(page);
       const { windowId } = await cdp.send('Browser.getWindowForTarget');
       await cdp.send('Browser.setWindowBounds', { windowId, bounds: { windowState: 'fullscreen' } });

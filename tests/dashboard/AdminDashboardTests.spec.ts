@@ -11,7 +11,8 @@ test.describe('Admin dashboard sections', Allure({ epic: 'Dashboard', story: 'Su
 
     test('displays Patients section to super admin', Allure({
         description: 'Verifies that a Super Admin user, authenticated through the API with local storage prepared, sees the Patients section on the admin dashboard',
-        tags: ['smoke', 'DSH-01'],
+        tags: ['smoke'],
+        requirement: 'DSH-01',
         tmsLink: 'HAT-T8',
     }), async ({ dashboardActions }) => {
         await dashboardActions.checkPatientsSectionDisplayed();

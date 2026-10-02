@@ -32,7 +32,7 @@ export default defineConfig({
         tms: {
           urlTemplate:
             'https://putitrightdone-team.atlassian.net/projects/HAT?selectedItem=com.atlassian.plugins.atlassian-connect-plugin:com.kanoah.test-manager__main-project-page#!/v2/testCase/%s',
-          nameTemplate: 'Zephyr %s',
+          nameTemplate: '%s',
         },
       },
     },
@@ -84,8 +84,8 @@ export default defineConfig({
       name: 'Google Chrome',
       use: {
         channel: 'chrome',
-        headless: false,
-        viewport: null,
+        headless: !!process.env.CI,
+        viewport: process.env.CI ? { width: 1920, height: 1080 } : null,
       },
     },
   ],

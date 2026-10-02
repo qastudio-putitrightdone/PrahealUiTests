@@ -5,7 +5,7 @@ import { Button, TextElement } from '../decorator';
 export class DashboardPage extends BasePage {
     readonly admin_dashboard_page_url = '/admin/dashboard';
 
-    readonly queueButton: Button;
+    protected readonly queueButton: Button;
     protected readonly patientsSection: TextElement;
 
     constructor(page: Page) {

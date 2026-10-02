@@ -87,7 +87,7 @@ Invoke the `automate-test` skill (Skill tool) with a self-contained description:
 - User / role constant, whether login is under test (normally not -> `browserSession.loginAs`), and the start page.
 - The precondition setup from step 4 (which `router` calls create which data, and the values the UI steps use) - automate-test puts it in `beforeEach` and must not repeat it through the UI.
 - Numbered UI steps with concrete expected results (improved version if chosen).
-- Required Allure metadata: the Zephyr test case ID as TMS link and the scenario ID(s) + `smoke` (if applicable) as tags, e.g. `Allure({ description: '...', tags: ['smoke', 'APT-03'], tmsLink: 'HAT-T12' })`. `tmsLink` renders a link to the Zephyr test case in Allure and adds the `@HAT-T12` tag automatically.
+- Required Allure metadata: the Zephyr test case ID as `tmsLink`, the scenario ID(s) as `requirement`, and `smoke` (if applicable) as a tag, e.g. `Allure({ description: '...', tags: ['smoke'], requirement: 'APT-03', tmsLink: 'HAT-T12' })`. `tmsLink` renders a link to the Zephyr test case in Allure and adds the `@HAT-T12` tag automatically.
 - Title from the Zephyr test case name (cleaned up); Allure description from the objective and expected results.
 
 automate-test then explores the app, builds page / actions / spec code under the framework rules (one verification point per test), runs the test, and maps it to Zephyr: because the key is given, it marks this test case automated with `npm run -s zephyr -- mark-automated <KEY> --spec <spec path> --title "<test title>"`. Automate each passing test case in turn.

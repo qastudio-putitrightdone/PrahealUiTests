@@ -13,7 +13,8 @@ test.describe('Login screen verifications', Allure({ epic: 'Authentication', sto
 
     test('login screen displays mobile number field', Allure({
         description: 'Verifies the mobile number field is visible on the staff login page',
-        tags: ['smoke', 'AUTH-01'],
+        tags: ['smoke'],
+        requirement: 'AUTH-01',
         tmsLink: 'HAT-T4',
     }), async ({ loginActions }) => {
         await loginActions.checkMobileNoTextFieldDisplayed();
@@ -21,7 +22,8 @@ test.describe('Login screen verifications', Allure({ epic: 'Authentication', sto
 
     test('login screen displays password field', Allure({
         description: 'Verifies the password field is visible on the staff login page',
-        tags: ['smoke', 'AUTH-01'],
+        tags: ['smoke'],
+        requirement: 'AUTH-01',
         tmsLink: 'HAT-T5',
     }), async ({ loginActions }) => {
         await loginActions.checkPasswordTextFieldDisplayed();
@@ -29,7 +31,8 @@ test.describe('Login screen verifications', Allure({ epic: 'Authentication', sto
 
     test('login screen displays login button', Allure({
         description: 'Verifies the login button is visible on the staff login page',
-        tags: ['smoke', 'AUTH-01'],
+        tags: ['smoke'],
+        requirement: 'AUTH-01',
         tmsLink: 'HAT-T6',
     }), async ({ loginActions }) => {
         await loginActions.checkLoginButtonDisplayed();
@@ -45,7 +48,8 @@ test.describe('Login functionality', Allure({ epic: 'Authentication', story: 'Lo
 
     test('login as Super Admin', Allure({
         description: 'Verifies the login functionality for Super Admin role',
-        tags: ['smoke', 'AUTH-02'],
+        tags: ['smoke'],
+        requirement: 'AUTH-02',
         tmsLink: 'HAT-T7',
     }), async ({ loginActions, dashboardActions }) => {
         await loginActions.loginToApplication(SUPER_ADMIN);
@@ -54,7 +58,8 @@ test.describe('Login functionality', Allure({ epic: 'Authentication', story: 'Lo
 
     test('shows error for invalid password of super admin', Allure({
         description: 'Verifies that logging in with the Super Admin registered mobile number and a wrong password shows the error message "Invalid Mobile No. Or Password."',
-        tags: ['smoke', 'AUTH-03'],
+        tags: ['smoke'],
+        requirement: 'AUTH-03',
         tmsLink: 'HAT-T2',
     }), async ({ loginActions }) => {
         await loginActions.loginWithInvalidPassword(SUPER_ADMIN, INVALID_PASSWORD);
@@ -63,7 +68,7 @@ test.describe('Login functionality', Allure({ epic: 'Authentication', story: 'Lo
 
     test('keeps super admin on login page after invalid password', Allure({
         description: 'Verifies that after logging in with the Super Admin registered mobile number and a wrong password the user stays on the staff login page and is not logged in',
-        tags: ['AUTH-03'],
+        requirement: 'AUTH-03',
         tmsLink: 'HAT-T3',
     }), async ({ loginActions }) => {
         await loginActions.loginWithInvalidPassword(SUPER_ADMIN, INVALID_PASSWORD);

@@ -7,7 +7,20 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["decorator", "pages", "actionsComponents", "fixtures", "tests", "playwright.config.ts"]
+  "include": [
+    "decorator",
+    "pages",
+    "actionsComponents",
+    "fixtures",
+    "api",
+    "constants",
+    "reporting",
+    "user",
+    "tests",
+    "playwright.config.ts"
+  ]
 }
