@@ -75,6 +75,9 @@ jobs:
           echo "Running: npx playwright test ${args[*]}"
           npx playwright test "${args[@]}"
 
+      - name: Attach screenshots to their steps
+        run: npm run -s allure:flatten
+
       - name: Requirements list for traceability
         run: npm run -s requirements:csv -- requirements.csv
 

@@ -59,6 +59,7 @@ Use the `/automate-test` skill (`.claude/skills/automate-test/SKILL.md`) to turn
 - When a framework rule changes in this file, update `lint/framework-rules.mjs` (and `eslint.config.mjs`) in the same change.
 - `.github/workflows/e2e-tests.yml` (manual: Actions -> E2E tests -> Run workflow) runs tests **headless** (`CI=true`) with inputs `scope` = `all` | `tags` (`tags` input in grep syntax, e.g. `@smoke` or `@smoke|@HAT-T2`) | `specs` (`specs` input: space-separated spec names / paths, e.g. `LoginTests AdminDashboardTests`). It then publishes the Allure Dashboard (`pranesh517/allure_dashboards@v2`) and its Traceability Matrix (requirement = Allure label `requirement`, test case = TMS link name; requirement list generated from the scenario catalog by `npm run requirements:csv`) to GitHub Pages, and uploads `allure-results` as an artifact.
 - GitHub Pages must be enabled with source "GitHub Actions" (Settings -> Pages); Pages on a private repository requires a paid GitHub plan.
+- `npm run allure:flatten` (`scripts/allure-flatten-attachments.mjs`) merges the status-less attachment steps that allure-playwright creates for every attachment (e.g. `check...` screenshots) into their parent step; without it the Allure Dashboard shows them as "Unknown". It runs in the E2E workflow and in `npm run allure:generate`.
 - On CI, Chrome runs headless at 1920x1080 and the fullscreen CDP step is skipped; locally the browser stays headed and fullscreen.
 
 ## Application context and test planning
