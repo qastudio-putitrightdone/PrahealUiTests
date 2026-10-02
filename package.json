@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "allure:generate": "rm -rf allure-report && allure generate allure-results -o allure-report",
+    "allure:generate": "npm run -s allure:flatten && rm -rf allure-report && allure generate allure-results -o allure-report",
     "allure:open": "allure open allure-report",
     "test:allure": "npm test; npm run allure:generate && npm run allure:open",
     "test:smoke": "playwright test --grep @smoke",
@@ -13,7 +13,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "lint:ci": "eslint . --format ./lint/github-formatter.mjs",
-    "requirements:csv": "node scripts/requirements-csv.mjs"
+    "requirements:csv": "node scripts/requirements-csv.mjs",
+    "allure:flatten": "node scripts/allure-flatten-attachments.mjs"
   },
   "keywords": [],
   "author": "",
